@@ -1,8 +1,6 @@
-using Logging, LoggingExtras, Loggers
-io = open('log.txt', "w+")
-logger = SimpleLogger(io Logging.Debug)
-addLogger(logger)
-push!(Loggers.handlers(logger), FileHandler("log.txt", force=true))
+using Logging, LoggingExtras
+io = open("log.txt", "w+")
+logger = SimpleLogger(io, Logging.Info)
 
 function scan(pacman=true, flatpak=true, snap=true, appimage=true)
 
@@ -19,8 +17,9 @@ function scan(pacman=true, flatpak=true, snap=true, appimage=true)
             push!(pacman_packages, package)
         end
         apps["pacman"] = pacman_packages
+        @info "pacman packages saved with success"
     catch e
-        @warn "trying to use pacman resulted in $e, prehaps pacman isn't available in your system"
+        @warn "trying to use pacman resulted in $e, prehaps pacman isn't available in your system" 
     end
 
     ######## Flatpak ########
@@ -35,6 +34,7 @@ function scan(pacman=true, flatpak=true, snap=true, appimage=true)
             push!(flatpak_packages, package)
         end
         apps["flatpak"] = flatpak_packages
+        @info "Flatpak packages saved with success"
     catch e  
         @warn "trying to use flatpak resulted in $e, prehaps flatpak isn't available in your system"
     end
@@ -52,6 +52,7 @@ function scan(pacman=true, flatpak=true, snap=true, appimage=true)
         end
 
         apps["snap"] = snap_packages
+        @info "snap packages saved with success"
     catch e
         @warn "trying to use snap resulted in $e, prehaps snap isn't available in your system"
     end
@@ -67,6 +68,7 @@ function scan(pacman=true, flatpak=true, snap=true, appimage=true)
         push!(appimage_packages, last(split(package,'/')))
     end
     apps["AppImage"] = appimage_packages
-
+    flush(io)
+    close(io)
     return apps
 end
