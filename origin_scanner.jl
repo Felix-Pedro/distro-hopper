@@ -1,5 +1,6 @@
-using Logging, LoggingExtras
-logger = SimpleLogger(stdout, Logging.Trace)
+using Logging, LoggingExtras, Loggers
+io = open('log.txt', "w+")
+logger = SimpleLogger(io Logging.Debug)
 addLogger(logger)
 push!(Loggers.handlers(logger), FileHandler("log.txt", force=true))
 
@@ -35,7 +36,7 @@ function scan(pacman=true, flatpak=true, snap=true, appimage=true)
         end
         apps["flatpak"] = flatpak_packages
     catch e  
-        @warn "trying to use flatpak resulted in $e, prehaps pacman isn't available in your system"
+        @warn "trying to use flatpak resulted in $e, prehaps flatpak isn't available in your system"
     end
 
     ######## Snap ########
@@ -52,7 +53,7 @@ function scan(pacman=true, flatpak=true, snap=true, appimage=true)
 
         apps["snap"] = snap_packages
     catch e
-        @warn "trying to use snap resulted in $e, prehaps pacman isn't available in your system"
+        @warn "trying to use snap resulted in $e, prehaps snap isn't available in your system"
     end
 
     ######## Appimage ########
