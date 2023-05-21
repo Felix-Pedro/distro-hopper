@@ -26,27 +26,18 @@ function scan(pacman=true, flatpak=true, snap=true, appimage=true)
 
     ######## Flatpak ########
     if flatpak
-        flatpak_packages = Vector{String}()
 
         try
             cmd_output = read(`flatpak list`, String)
             column_names = ["name","id", "version", "branch", "remote"]
             lines = split(cmd_output, '\n')
             data = [split(line, '\t') for line in lines]
-            df=DataFrame([Symbol(name) => [] for name in column_names])
+            df_flatpak=DataFrame([Symbol(name) => [] for name in column_names])
 
             for line in [l for l in data if size(l)==size(column_names)]  ## this feels very ineficient but it's the best result I've got given I'm still learning julia, in python this would be considered a crime. 
-                push!(df,line)
+                push!(df_flatpak,line)
             end
-
-
-            # split the output by newline and store each line as an element in the vector
-            for package in split(cmd_output, '\n')
-                push!(flatpak_packages, package)
-            end
-            df = DataFrame(flatpak_packages)
-            print(df)
-            apps["flatpak"] = flatpak_packages
+            apps["flatpak"] = df_flatpak
             @info "Flatpak packages saved with success"
         catch e  
             @warn "trying to use flatpak resulted in $e, prehaps flatpak isn't available in your system"
@@ -54,17 +45,20 @@ function scan(pacman=true, flatpak=true, snap=true, appimage=true)
     end
     ######## Snap ########
     if snap
-        snap_packages = Vector{String}()
 
         try
             cmd_output = read(`snap list`, String)
-
-            # split the output by newline and store each line as an element in the vector
-            for package in split(cmd_output, '\n')
-                push!(snap_packages, package)
+            lines = split(cmd_output, '\n')
+            data = [split(line, " ") for line in lines]
+            data = [[item for item in line if item != ""] for line in data]
+            column_names = data[:1]
+            data = data[2:end]
+            df_snap = DataFrame([Symbol(name) => [] for name in column_names])
+            for line in [l for l in data if size(l) == size(column_names)]
+                push!(df_snap, line)
             end
 
-            apps["snap"] = snap_packages
+            apps["snap"] = df_snap
             @info "snap packages saved with success"
         catch e
             @warn "trying to use snap resulted in $e, prehaps snap isn't available in your system"
